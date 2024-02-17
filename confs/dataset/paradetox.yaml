@@ -1,0 +1,8 @@
+dataset_name: s-nlp/paradetox
+test_size: 0.1
+use_split: True
+use_json: False
+train_dataset_file: ./dataset/paradetox_train.json
+val_dataset_file: ./dataset/paradetox_val.json
+source: en_toxic_comment
+target: en_neutral_comment

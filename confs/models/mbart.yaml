@@ -1,0 +1,3 @@
+defaults:
+  - base_model
+pretrained_model_name_or_path: facebook/mbart-large-50-one-to-many-mmt

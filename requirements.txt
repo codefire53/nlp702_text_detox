@@ -1,0 +1,6 @@
+torch
+torchtext
+hydra-core
+transformers
+datasets
+adapters

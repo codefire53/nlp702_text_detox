@@ -1,0 +1,7 @@
+- models=mt5
+- adapters=unipelt
+- dataset=paradetox
+- tokenizers=mt5
+- run_name=mt5-base_unipelt_paradetox
+- output_dir=./outputs/mt5-base_unipelt_paradetox/checkpoints
+- logging_dir=./outputs/mt5-base_unipelt_paradetox/logs

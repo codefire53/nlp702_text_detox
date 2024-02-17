@@ -1,0 +1,4 @@
+dataset_name: s-nlp/ru_paradetox
+use_split: False
+source: ru_toxic_comment
+target: ru_neutral_comment

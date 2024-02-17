@@ -1,0 +1,13 @@
+defaults:
+  - train: hf_default
+  - models: mt5
+  - madx: en_ru
+  - tokenizers: mt5
+  - dataset: paradetox
+  - collators: default
+  - earlystopping: default
+  - tokenizers: mt5
+  - adapters: seq_bn
+output_dir: ./outputs/mt5-base_madx/checkpoints
+logging_dir: ./outputs/mt5-base_madx/logs
+run_name: mt5-base_madx
