@@ -1,4 +1,14 @@
-dataset_name: s-nlp/ru_paradetox
+train_dataset_name_or_file: s-nlp/ru_paradetox
+train_split: train
+train_source: ru_toxic_comment
+train_target: ru_neutral_comment
+val_dataset_name_or_file: s-nlp/ru_paradetox
+val_split: validation
+val_source: ru_toxic_comment
+val_target: ru_neutral_comment
+test_dataset_name_or_file: textdetox/multilingual_paradetox
+test_source: toxic_sentence
 use_split: False
-source: ru_toxic_comment
-target: ru_neutral_comment
+source_filepath: './dataset/ru_paradetox_toxic_prefix.txt'
+pred_filepath: './dataset/ru_paradetox_detox_prefix.txt'
+merge_filepath: './dataset/ru_paradetox_result_prefix.tsv'

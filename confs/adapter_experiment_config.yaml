@@ -1,13 +1,19 @@
 defaults:
-  - train: hf_default
-  - models: mt5
+  - trainer: default
+  - dataloader: default
+  - models: m2m100
+  - loggers: wandb
+  - lr_monitors: default
+  - optim: default
   - madx: en_ru
-  - tokenizers: mt5
-  - dataset: paradetox
+  - tokenizers: m2m100
+  - dataset: ru_paradetox
   - collators: default
   - earlystopping: default
-  - tokenizers: mt5
-  - adapters: seq_bn
-output_dir: ./outputs/mt5-base_madx/checkpoints
-logging_dir: ./outputs/mt5-base_madx/logs
-run_name: mt5-base_madx
+  - tokenizers: m2m100
+  - adapters: prefix
+  - checkpoint: default
+do_train: False
+do_test: True
+target_lang: ru
+checkpoint_file: ./outputs/m2m100-base_prefix-paradetox-ru/checkpoints/model-epoch=58-val_loss=7.05-val_bleu=32.78.ckpt
