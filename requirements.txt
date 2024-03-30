@@ -4,3 +4,7 @@ hydra-core
 transformers
 datasets
 adapters
+peft
+lightning
+evaluate
+sentence-transformers
