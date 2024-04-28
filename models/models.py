@@ -29,14 +29,6 @@ class AdapterSeq2SeqModel(L.LightningModule):
         self.bleu_metric = evaluate.load('sacrebleu')
         self.rouge_metric = evaluate.load('rouge')
         self.chrf_metric = evaluate.load('chrf')
-        # self.bert_tokenizer = AutoTokenizer.from_pretrained("textdetox/xlmr-base-toxicity-classifier")
-        # self.bert_model = AutoModelForSequenceClassification.from_pretrained("textdetox/xlmr-base-toxicity-classifier", num_labels=2).to('cuda')
-        # self.bert_model.eval()
-        # self.sts_model = SentenceTransformer('sentence-transformers/LaBSE')
-
-        # self.chrf_scores = []
-        # self.polite_scores = []
-        # self.sim_scores = []
         
         
     def forward(self, input_ids, attention_mask=None, labels=None):
@@ -77,54 +69,6 @@ class AdapterSeq2SeqModel(L.LightningModule):
         self.log_dict({'val_bleu': bleu_result['score'], 'val_rouge': rouge_result['rougeL'], 
                        'val_chrf++': chrf_result['score']}, prog_bar=True)
 
-    # def _eval_polite_score(self, sentences):
-    #     polite_label = 0
-    #     inputs = self.bert_tokenizer(
-    #         *sentences,
-    #         return_tensors="pt",
-    #         padding=True,
-    #         truncation=True,
-    #         max_length=512,
-    #     ).to(self.bert_model.device)
-    #     with torch.no_grad():
-    #         try:
-    #             logits = model(**inputs).logits
-    #             preds = torch.softmax(logits, -1)[:,polite_label]
-    #             preds = polite_scores.cpu().numpy()
-    #         except:
-    #             preds = [0] * len(inputs)
-    #     print(f"politeness: {preds}")
-    #     self.polite_scores.extend(preds)
-
-    # def _compute_cosine_sim(self, embds1, embds2):
-    #     sim_matrix = np.dot(embds1, embds2.T)
-    #     norms1 = np.linalg.norm(embds1, axis=1)
-    #     norms2 = np.linalg.norm(embds2, axis=1)
-    #     score = sim_matrix / (np.outer(norms1, norms2) + 1e-9)
-
-    # def _eval_sim_score(self, source_sentences, detox_sentences):
-    #     source_len = len(source_sentences)
-    #     detox_len = len(detox_sentences)
-    #     all_texts = detox_sentences + source_sentences
-    #     embds = self.sts_model.encode(all_texts)
-    #     detox_embds = embds[:detox_len] 
-    #     source_embds = embds[detox_len:]
-    #     scores = []
-    #     sim_scores = self._compute_cosine_sim(detox_embds, source_embds)
-    #     for i in range(detox_len):
-    #         sim_score = max(sim_scores[i,i+detox_len], 0)
-    #         scores.append(sim_score)
-    #     print(f"similarity: {scores}")
-    #     self.sim_scores.extend(scores)
-    
-    # def _eval_chrf_score(self, source_sentences, detox_sentences):
-    #     scores = []
-    #     for src, detox in zip(source_sentences, detox_sentences):
-    #         chrf_score = self.chrf_metric.compute(predictions=[detox], references=[src], word_order=2)
-    #         chrf_score = chrf_score['score']/100
-    #         scores.append(chrf_score)
-    #     print(f"chrf: {scores}")
-    #     self.chrf_scores(scores)
 
     def test_step(self, batch, batch_idx):
         # Generate predictions
@@ -135,21 +79,7 @@ class AdapterSeq2SeqModel(L.LightningModule):
         decoded_sentences = [sentence.strip() for sentence in decoded_sentences]
         self.test_preds.extend(decoded_sentences)
 
-        # self._eval_polite_score([decoded_sentences])
-        # self._eval_chrf_score(original_sentences, detox_sentences)
-        # self._eval_sim_score(original_sentences, detox_sentences)
-
     def on_test_epoch_end(self):
-        # agg_scores = np.array(self.chrf_scores)*np.array(self.sim_scores)*np.array(self.polite_scores)
-        # overall_total = sum(agg_scores)/len(agg_scores)
-        # overall_chrf = sum(self.chrf_scores)/len(self.chrf_scores)
-        # overall_sim = sum(self.sim_scores)/len(self.sim_scores)
-        # overall_polite = sum(self.polite_scores)/len(self.polite_scores)
-
-
-        # Log metrics
-        # self.log_dict({'test_politeness': overall_polite, 'test_similarity': overall_sim, 'test_total': overall_total, 'test_chrf': overall_chrf}, prog_bar=True)
-        
         test_preds = '\n'.join(self.test_preds)
         path_prefix, path_suffix = self.pred_path.rsplit('.', 1)
         filepath = f"{path_prefix}_{self.target_lang}.{path_suffix}"

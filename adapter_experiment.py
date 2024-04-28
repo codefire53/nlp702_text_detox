@@ -4,7 +4,7 @@ import numpy as np
 from factory.adapter_model_factory import initialize_tokenizer
 from utils import load_detox_sets, load_test_dataset, load_test_dataloader
 from datasets import load_dataset
-from models.adapter_seq2seq import AdapterSeq2SeqModel
+from models.models import AdapterSeq2SeqModel
 from lightning.pytorch.loggers import WandbLogger
 from lightning.pytorch import Trainer, seed_everything
 from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping, RichProgressBar, LearningRateMonitor
