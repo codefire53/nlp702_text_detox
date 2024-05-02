@@ -19,3 +19,4 @@ tqdm==4.66.2
 transformers==4.39.3
 torchtext
 adapters
+openai==1.23.1
