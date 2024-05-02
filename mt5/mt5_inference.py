@@ -17,7 +17,7 @@ def main():
     toxic_sentences = test_df["toxic_sentence"].tolist()
     # predict with the model with batch size 8
     neutral_sentences = []
-    for i in tqdm(range(0, len(toxic_sentences), 8)):
+    for i in range(0, len(toxic_sentences), 8):
         batch = toxic_sentences[i : i + 8]
         inputs = tokenizer(batch, return_tensors="pt", padding=True, truncation=True, max_length=128)
         outputs = model.generate(**inputs)
