@@ -1,13 +1,27 @@
 defaults:
-  - train: hf_default
-  - models: mt5
-  - madx: en_ru
-  - tokenizers: mt5
-  - dataset: paradetox
+  - trainer: default
+  - dataloader: default
+  - models: m2m100
+  - loggers: wandb
+  - lr_monitors: default
+  - optim: default
+  - tokenizers: m2m100
+  - dataset: joint_paradetox
   - collators: default
   - earlystopping: default
-  - tokenizers: mt5
-  - adapters: seq_bn
-output_dir: ./outputs/mt5-base_madx/checkpoints
-logging_dir: ./outputs/mt5-base_madx/logs
-run_name: mt5-base_madx
+  - tokenizers: m2m100
+  - adapters: molora
+  - checkpoint: default
+do_train: false
+do_test: true
+target_lang: en
+in_filepath: ./dataset/sample_submission_test.tsv
+out_filepath: ./dataset/molora_paradetox-ru_test.tsv
+output_submission_file: true
+output_self_eval_file: true
+out_src_eval_filepath: ./dataset/joint_molora_source.json
+out_pred_eval_filepath: ./dataset/joint_molora_pred.json
+out_tgt_eval_filepath: ./dataset/joint_molora_target.json
+source_field: toxic_sentence
+target_field: neutral_sentence
+checkpoint_file: ./outputs/m2m100-base_molora-paradetox-joint/checkpoints/model-epoch=3-val_loss=11.41-val_bleu=0.66.ckpt

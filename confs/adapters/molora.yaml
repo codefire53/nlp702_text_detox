@@ -1,0 +1,12 @@
+name: molora
+targets_file: './confs/m2m100.json'
+lora:
+  r: 8
+  lora_alpha: 32
+  lora_dropout: 0.1
+  use_bias: False
+gate:
+  hidden_dim: 32
+  top_k: 2
+  num_experts: 2
+  threshold: 0
