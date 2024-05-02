@@ -1,4 +1,8 @@
 torch
+numpy
+pandas
+sacrebleu
+scipy
 torchtext
 hydra-core
 transformers

@@ -15,3 +15,4 @@ use_split: False
 source_filepath: './dataset/paradetox_toxic_prefix.txt'
 pred_filepath: './dataset/paradetox_detox_prefix.txt'
 merge_filepath: './dataset/paradetox_result_prefix.tsv'
+use_joint: false

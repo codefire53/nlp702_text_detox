@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# This code is official code for evaluation from the organizer
 
 __credits__ = ["David Dale", "Daniil Moskovskiy", "Dmitry Ustalov", "Elisei Stakovskii"]
 

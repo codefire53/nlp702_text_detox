@@ -1,5 +1,0 @@
-task_adapter_name: ru_paradetox
-source_language: ru
-source_adapter: ru/wiki@ukp
-target_language: en
-target_adapter: en/wiki@ukp
