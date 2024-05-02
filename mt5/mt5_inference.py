@@ -5,10 +5,9 @@ import pandas as pd
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
 
-
 def main():
     # evaluate the best model on test
-    best_model = "mT5_FT_chrf/checkpoint-14500"
+    best_model = "mT5_FT/mt5_best"
     # load model
     model = AutoModelForSeq2SeqLM.from_pretrained(best_model)
     # load tokenizer
@@ -19,7 +18,7 @@ def main():
     # predict with the model with batch size 8
     neutral_sentences = []
     for i in tqdm(range(0, len(toxic_sentences), 8)):
-        batch = toxic_sentences[i:i+8]
+        batch = toxic_sentences[i : i + 8]
         inputs = tokenizer(batch, return_tensors="pt", padding=True, truncation=True, max_length=128)
         outputs = model.generate(**inputs)
         neutral_sentences.extend(tokenizer.batch_decode(outputs, skip_special_tokens=True))
@@ -32,4 +31,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

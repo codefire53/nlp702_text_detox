@@ -31,7 +31,14 @@ from typing import Optional
 import nltk  # Here to have a nice missing dependency error message early on
 import numpy as np
 from datasets import load_dataset, load_metric
-from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score, classification_report, confusion_matrix
+from sklearn.metrics import (
+    accuracy_score,
+    f1_score,
+    recall_score,
+    precision_score,
+    classification_report,
+    confusion_matrix,
+)
 
 import transformers
 from filelock import FileLock
@@ -48,22 +55,22 @@ from transformers import (
     Seq2SeqTrainer,
     Seq2SeqTrainingArguments,
     default_data_collator,
-    set_seed, MBart50Tokenizer
+    set_seed,
+    MBart50Tokenizer,
 )
 from transformers.trainer_utils import get_last_checkpoint, is_main_process
 
 from datasets import load_metric
 
-chrf_metric = load_metric('chrf')
+chrf_metric = load_metric("chrf")
 
 # cache_dir="/project/6007993/elmadany/T5/cache_dir" #Cedar
-cache_dir="/tmp/AraT5_cache_dir" #Sockeye
-#with FileLock(".lock") as lock:
+cache_dir = "/tmp/AraT5_cache_dir"  # Sockeye
+# with FileLock(".lock") as lock:
 #    nltk.download("punkt", quiet=True)
 
 
 logger = logging.getLogger(__name__)
-
 
 
 def save_json(content, path, indent=4, **json_dump_kwargs):
@@ -77,8 +84,9 @@ class ModelArguments:
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
     """
 
-    model_name_or_path: str = field(default = "google/mt5-base",
-        metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
+    model_name_or_path: str = field(
+        default="google/mt5-base",
+        metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"},
     )
     config_name: Optional[str] = field(
         default=None, metadata={"help": "Pretrained config name or path if not the same as model_name"}
@@ -135,7 +143,8 @@ class DataTrainingArguments:
         metadata={"help": "The name of the column in the datasets containing the summaries (for summarization)."},
     )
     train_file: Optional[str] = field(
-        default="/home/ganeshjw/projects/rrg-mageed/ganeshjw/projects/MT5/mt5_train.json", metadata={"help": "The input training data file (a jsonlines or csv file)."}
+        default="/home/ganeshjw/projects/rrg-mageed/ganeshjw/projects/MT5/mt5_train.json",
+        metadata={"help": "The input training data file (a jsonlines or csv file)."},
     )
     validation_file: Optional[str] = field(
         default="/home/ganeshjw/projects/rrg-mageed/ganeshjw/projects/MT5/mt5_dev.json",
@@ -151,9 +160,7 @@ class DataTrainingArguments:
             "(a jsonlines or csv file)."
         },
     )
-    overwrite_cache: bool = field(
-        default=False, metadata={"help": "Overwrite the cached training and evaluation sets"}
-    )
+    overwrite_cache: bool = field(default=False, metadata={"help": "Overwrite the cached training and evaluation sets"})
     preprocessing_num_workers: Optional[int] = field(
         default=None,
         metadata={"help": "The number of processes to use for the preprocessing."},
@@ -238,11 +245,11 @@ class DataTrainingArguments:
                 assert extension in ["tsv", "csv", "json"], "`train_file` should be a csv or a json file."
             if self.validation_file is not None:
                 extension = self.validation_file.split(".")[-1]
-                assert extension in ["tsv","csv", "json"], "`validation_file` should be a csv or a json file."
-#         if not self.task.startswith("summarization") and not self.task.startswith("translation"):
-#             raise ValueError(
-#                 "`task` should be summarization, summarization_{dataset}, translation or translation_{xx}_to_{yy}."
-#             )
+                assert extension in ["tsv", "csv", "json"], "`validation_file` should be a csv or a json file."
+        #         if not self.task.startswith("summarization") and not self.task.startswith("translation"):
+        #             raise ValueError(
+        #                 "`task` should be summarization, summarization_{dataset}, translation or translation_{xx}_to_{yy}."
+        #             )
         if self.val_max_target_length is None:
             self.val_max_target_length = self.max_target_length
 
@@ -263,7 +270,7 @@ summarization_name_mapping = {
 
 
 def main():
-    early_stopping_num=20
+    early_stopping_num = 20
     # See all possible arguments in src/transformers/training_args.py
     # or by passing the --help flag to this script.
     # We now keep distinct sets of args, for a cleaner separation of concerns.
@@ -275,8 +282,7 @@ def main():
         model_args, data_args, training_args = parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
     else:
         model_args, data_args, training_args = parser.parse_args_into_dataclasses()
-    
-    
+
     # Detecting last checkpoint.
     last_checkpoint = None
     if os.path.isdir(training_args.output_dir) and training_args.do_train and not training_args.overwrite_output_dir:
@@ -291,16 +297,16 @@ def main():
                 f"Checkpoint detected, resuming training at {last_checkpoint}. To avoid this behavior, change "
                 "the `--output_dir` or add `--overwrite_output_dir` to train from scratch."
             )
-    #automatic checking last checkpoint
-    ckpt_num=0
-    for ck in glob.glob(training_args.output_dir+"/checkpoint-*"):
-        current_ckpt_num=int(regex.sub("_best","",ck.split("/")[-1].split("-")[-1]))
-        if current_ckpt_num>ckpt_num:
-            ckpt_num=current_ckpt_num
-    if ckpt_num>0:
-        last_checkpoint=training_args.output_dir+"/checkpoint-"+str(ckpt_num)
-    print ("last_checkpoint", last_checkpoint)
-    
+    # automatic checking last checkpoint
+    ckpt_num = 0
+    for ck in glob.glob(training_args.output_dir + "/checkpoint-*"):
+        current_ckpt_num = int(regex.sub("_best", "", ck.split("/")[-1].split("-")[-1]))
+        if current_ckpt_num > ckpt_num:
+            ckpt_num = current_ckpt_num
+    if ckpt_num > 0:
+        last_checkpoint = training_args.output_dir + "/checkpoint-" + str(ckpt_num)
+    print("last_checkpoint", last_checkpoint)
+
     # Setup logging
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
@@ -349,8 +355,8 @@ def main():
             data_files["test"] = data_args.test_file
             extension = data_args.test_file.split(".")[-1]
         if "tsv" in extension:
-            print ("[INFO] loading from TSV")
-            datasets = load_dataset("csv", delimiter="\t", data_files=data_files, cache_dir=cache_dir)    
+            print("[INFO] loading from TSV")
+            datasets = load_dataset("csv", delimiter="\t", data_files=data_files, cache_dir=cache_dir)
         else:
             datasets = load_dataset(extension, data_files=data_files, cache_dir=cache_dir)
     # See more about loading any type of standard or custom dataset (from files, python dict, pandas DataFrame, etc) at
@@ -366,7 +372,7 @@ def main():
         cache_dir=cache_dir,
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
-        #local_files_only = True
+        # local_files_only = True
     )
     if model_args.model_name_or_path != "facebook/mbart-large-50-many-to-many-mmt":
         tokenizer = AutoTokenizer.from_pretrained(
@@ -375,7 +381,7 @@ def main():
             use_fast=model_args.use_fast_tokenizer,
             revision=model_args.model_revision,
             use_auth_token=True if model_args.use_auth_token else None,
-            #local_files_only = True
+            # local_files_only = True
         )
     else:
         tokenizer = MBart50Tokenizer.from_pretrained(
@@ -384,7 +390,7 @@ def main():
             use_fast=model_args.use_fast_tokenizer,
             revision=model_args.model_revision,
             use_auth_token=True if model_args.use_auth_token else None,
-            #local_files_only = True
+            # local_files_only = True
         )
     model = AutoModelForSeq2SeqLM.from_pretrained(
         model_args.model_name_or_path,
@@ -393,7 +399,7 @@ def main():
         cache_dir=cache_dir,
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
-        #local_files_only = True
+        # local_files_only = True
     )
 
     # Set decoder_start_token_id
@@ -476,14 +482,14 @@ def main():
         )
 
     def preprocess_function(examples):
-#         if data_args.task.startswith("translation"):
-            #inputs = [ex[source_lang] for ex in examples["translation"]]
-            #targets = [ex[target_lang] for ex in examples["translation"]]
+        #         if data_args.task.startswith("translation"):
+        # inputs = [ex[source_lang] for ex in examples["translation"]]
+        # targets = [ex[target_lang] for ex in examples["translation"]]
         inputs = examples[data_args.text_column]
         targets = examples[data_args.summary_column]
-#         else:
-#             inputs = examples[text_column]
-#             targets = examples[summary_column]
+        #         else:
+        #             inputs = examples[text_column]
+        #             targets = examples[summary_column]
         inputs = [str(prefix) + str(inp) for inp in inputs]
         model_inputs = tokenizer(inputs, max_length=data_args.max_source_length, padding=padding, truncation=True)
 
@@ -563,9 +569,9 @@ def main():
     # elif "translate" in data_args.task:
     #     metric_name = "bleu"
     # else:
-    metric_name = regex.sub("eval_","",training_args.metric_for_best_model)
-#     metric_name = "f1" #"rouge" if data_args.task.startswith("summarization") else "sacrebleu"
-    print ("[INFO] evlaute using ", metric_name, "score", "task name:", data_args.task)
+    metric_name = regex.sub("eval_", "", training_args.metric_for_best_model)
+    #     metric_name = "f1" #"rouge" if data_args.task.startswith("summarization") else "sacrebleu"
+    print("[INFO] evlaute using ", metric_name, "score", "task name:", data_args.task)
     # metric = load_metric("f1", cache_dir=cache_dir)
 
     def postprocess_text(preds, labels):
@@ -574,15 +580,21 @@ def main():
 
         # rougeLSum expects newline after each sentence
         if "rouge" in metric_name:
-            preds = ["\\n \\n ".join(nltk.sent_tokenize(pred)) if len(nltk.sent_tokenize(pred))> 1 else pred+"\\n" for pred in preds]
-            labels = ["\\n \\n ".join(nltk.sent_tokenize(label)) if len(nltk.sent_tokenize(label))> 1 else label+"\\n" for label in labels]
+            preds = [
+                "\\n \\n ".join(nltk.sent_tokenize(pred)) if len(nltk.sent_tokenize(pred)) > 1 else pred + "\\n"
+                for pred in preds
+            ]
+            labels = [
+                "\\n \\n ".join(nltk.sent_tokenize(label)) if len(nltk.sent_tokenize(label)) > 1 else label + "\\n"
+                for label in labels
+            ]
 
             # preds = ["\n".join(nltk.sent_tokenize(pred)) for pred in preds]
             # labels = ["\n".join(nltk.sent_tokenize(label)) for label in labels]
         elif metric_name == "QA_f1":
-            labels = [label.split('*****') for label in labels]
-#         elif metric_name == "bleu":  # sacrebleu
-#             labels = [[label] for label in labels]
+            labels = [label.split("*****") for label in labels]
+        #         elif metric_name == "bleu":  # sacrebleu
+        #             labels = [[label] for label in labels]
         # else:
         #     labels = [label for label in labels]
         return preds, labels
@@ -600,8 +612,8 @@ def main():
         # Some simple post-processing
         decoded_preds, decoded_labels = postprocess_text(decoded_preds, decoded_labels)
         if "rouge" in metric_name:
-            use_agregator= True
-            rouge_types = ["rouge1", "rouge2", "rougeL"]#, "rougeLsum"]
+            use_agregator = True
+            rouge_types = ["rouge1", "rouge2", "rougeL"]  # , "rougeLsum"]
             scorer = rouge_scorer.RougeScorer(rouge_types=rouge_types, use_stemmer=True)
             if use_agregator:
                 aggregator = scoring.BootstrapAggregator()
@@ -621,12 +633,12 @@ def main():
                 result = {}
                 for key in scores[0]:
                     result[key] = list(score[key] for score in scores)
-            
+
             # result = []#metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
             # Extract a few results from ROUGE
             result = {key: value.mid.fmeasure * 100 for key, value in result.items()}
         elif metric_name == "bleu":
-#             result = metric.compute(predictions=decoded_preds, references=[decoded_labels])
+            #             result = metric.compute(predictions=decoded_preds, references=[decoded_labels])
             bleu_results = sacrebleu.corpus_bleu(decoded_preds, [decoded_labels])
             bleu_score = bleu_results.score
             result = {"bleu": bleu_score}
@@ -637,53 +649,46 @@ def main():
             result = {"chrf": result_chrf["score"]}
         else:
             accuracy = accuracy_score(decoded_labels, decoded_preds)
-            f1 = f1_score(decoded_labels, decoded_preds, average='macro') 
-            recall = recall_score(decoded_labels, decoded_preds, average='macro')
-            precision = precision_score(decoded_labels, decoded_preds, average='macro')
-            result =  {
-                'accuracy': accuracy,
-                'f1_macro': f1,
-                'precision': precision,
-                'recall': recall
-                }
-            #--------- compute FNP for sentiment only ---------------------------
+            f1 = f1_score(decoded_labels, decoded_preds, average="macro")
+            recall = recall_score(decoded_labels, decoded_preds, average="macro")
+            precision = precision_score(decoded_labels, decoded_preds, average="macro")
+            result = {"accuracy": accuracy, "f1_macro": f1, "precision": precision, "recall": recall}
+            # --------- compute FNP for sentiment only ---------------------------
             if "ArBench_Senti" in data_args.task:
                 report = classification_report(decoded_labels, decoded_preds)
-                print (report)
-                F1PN_n="neg" #Negative class
-                F1PN_p="pos" #Positive class
-                F1PN_u="neut" #Nutral class
-                F_NP=0.0
-                AvgRec=0.0
+                print(report)
+                F1PN_n = "neg"  # Negative class
+                F1PN_p = "pos"  # Positive class
+                F1PN_u = "neut"  # Nutral class
+                F_NP = 0.0
+                AvgRec = 0.0
                 for line in regex.split("[\r\n\f]+", report):
-                    line_info=regex.split("\s+", line)
-                    if len(line_info) <5:
+                    line_info = regex.split("\s+", line)
+                    if len(line_info) < 5:
                         continue
-                    report_label=line_info[1]
-                    report_P=line_info[2]
-                    report_R=line_info[3]
-                    report_F1=line_info[4]
+                    report_label = line_info[1]
+                    report_P = line_info[2]
+                    report_R = line_info[3]
+                    report_F1 = line_info[4]
                     if str(F1PN_n) in report_label:
-                        print ("*** Negative class P,R,F1",report_label,report_P, report_R, report_F1)
-                        rN=float(report_R)
-                        Nf1=float(report_F1)
+                        print("*** Negative class P,R,F1", report_label, report_P, report_R, report_F1)
+                        rN = float(report_R)
+                        Nf1 = float(report_F1)
                     elif str(F1PN_p) in report_label:
-                        print ("*** Positive class P,R,F1",report_label,report_P, report_R, report_F1)
-                        rP=float(report_R)
-                        Pf1=float(report_F1)
+                        print("*** Positive class P,R,F1", report_label, report_P, report_R, report_F1)
+                        rP = float(report_R)
+                        Pf1 = float(report_F1)
                     elif str(F1PN_u) in report_label:
-                        print ("*** EVAL Neutral class P,R,F1",report_label,report_P, report_R, report_F1)
-                        rU=float(report_R)
-                        Uf1=float(report_F1)
-                if str(F1PN_u)!="":
-                    AvgRec=(rN+rP+rU)/3 #compute AvgRecall
-                F_NP=(Nf1+Pf1)/2 #compute F1PN
-                result['sentiment_F_NP']=F_NP
-                result['sentiment_AvgRec']=AvgRec
-            #------------------------------------------------------
+                        print("*** EVAL Neutral class P,R,F1", report_label, report_P, report_R, report_F1)
+                        rU = float(report_R)
+                        Uf1 = float(report_F1)
+                if str(F1PN_u) != "":
+                    AvgRec = (rN + rP + rU) / 3  # compute AvgRecall
+                F_NP = (Nf1 + Pf1) / 2  # compute F1PN
+                result["sentiment_F_NP"] = F_NP
+                result["sentiment_AvgRec"] = AvgRec
+            # ------------------------------------------------------
             # report = classification_report(all_label, all_pred)
-            
-        
 
         prediction_lens = [np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds]
         result["gen_len"] = np.mean(prediction_lens)
@@ -701,20 +706,20 @@ def main():
         data_collator=data_collator,
         compute_metrics=compute_metrics if training_args.predict_with_generate else None,
     )
-    print ("[INFO] early_stopping_num=", early_stopping_num)
-    trainer.add_callback(EarlyStoppingCallback(early_stopping_num)) #number of patient epochs before early stopping
+    print("[INFO] early_stopping_num=", early_stopping_num)
+    trainer.add_callback(EarlyStoppingCallback(early_stopping_num))  # number of patient epochs before early stopping
     all_metrics = {}
     # Training
     if training_args.do_train:
         if last_checkpoint is not None:
             checkpoint = last_checkpoint
-            print ("***** checkpoint= resume_from_checkpoint", checkpoint)
+            print("***** checkpoint= resume_from_checkpoint", checkpoint)
         elif os.path.isdir(model_args.model_name_or_path):
             checkpoint = model_args.model_name_or_path
-            print ("***** checkpoint= model_name_or_path", checkpoint)
+            print("***** checkpoint= model_name_or_path", checkpoint)
         else:
             checkpoint = None
-            print ("***** checkpoint=", checkpoint)
+            print("***** checkpoint=", checkpoint)
 
         train_result = trainer.train(resume_from_checkpoint=checkpoint)
         trainer.save_model()  # Saves the tokenizer too for easy upload
@@ -792,7 +797,7 @@ def main():
 
     if trainer.is_world_process_zero():
         save_json(all_metrics, os.path.join(training_args.output_dir, "all_results.json"))
-    #----------delete eval checkpoints
+    # ----------delete eval checkpoints
     # for ck in glob.glob(training_args.output_dir+"/checkpoint-*"):
     #     shutil.rmtree(ck)
     # return results
@@ -805,12 +810,3 @@ def _mp_fn(index):
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-
