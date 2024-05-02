@@ -20,3 +20,6 @@ To do evaluation on validation set (please just differentiate the prediction and
 ```
 python evaluate_pred.py --prediction ./dataset/bloomz_pred_dev.json  -l ./dataset/lang_dev.json -i ./dataset/source_dev.json -g ./multidetox_gt_dev.json -o ./eval_files/bloomz_dev.txt
 ```
+
+# Checkpoints
+To get checkpoints for our experiments you can download them from [here](https://mbzuaiac-my.sharepoint.com/:f:/g/personal/mahardika_ihsani_mbzuai_ac_ae/Ek_E5ueFodhEjmq4djyraUgB6s3ngC4F7328JEXIXjn-dA?e=hAsNuY) (for PEFT approaches).
