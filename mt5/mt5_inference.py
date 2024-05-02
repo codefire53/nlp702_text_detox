@@ -14,7 +14,7 @@ def main():
     # load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(best_model)
     # read df without index
-    test_df = pd.read_csv("inputs_multilingual_test.tsv", sep="\t")
+    test_df = pd.read_csv("../dataset/inputs_multilingual_test.tsv", sep="\t")
     toxic_sentences = test_df["toxic_sentence"].tolist()
     # predict with the model with batch size 8
     neutral_sentences = []
