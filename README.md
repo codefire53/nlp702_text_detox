@@ -43,5 +43,18 @@ To run inference on the test set, you can run the following command:
 python mt5/mt5_inference.py
 ```
 
+# Zero- and few-shot
+To get zero- or few-shot outputs, run the following:
+```
+python zero_few_shot.py --filename <path-to-your-file> --model_tag gpt-3.5-turbo --prompt_English True --shots True --api_key <your-key>
+```
+Specify the following arguments:
+* `--filename`: The TSV file to evaluate.
+* `--model_tag`: The model used to generate the outputs: tag from OpenAI or Hugging Face. Only `gpt-3.5-turbo`, `bigscience/bloomz-7b1`, `bigscience/mt0-xxl` are available.
+* `prompt_English`: Whether the prompt is in English or not.
+* `--shots`: Whether to include examples in the prompt.
+* `--api_key`: The OpenAI API key if applicable.  
+The output will be saved to the same directory with suffix `_detoxified`.
+
 # Checkpoints
 To get checkpoints for our experiments you can download them from [here](https://mbzuaiac-my.sharepoint.com/:f:/g/personal/mahardika_ihsani_mbzuai_ac_ae/Ek_E5ueFodhEjmq4djyraUgB6s3ngC4F7328JEXIXjn-dA?e=hAsNuY) (for PEFT and mT5 approaches).
