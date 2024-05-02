@@ -18,9 +18,5 @@ python adapter_experiment.py
 # Evaluation
 To do evaluation on validation set (please just differentiate the prediction and o argument here)
 ```
-python evaluate_pred.py --prediction ./dataset/bloomz_pred_dev.json  -i ./dataset/source_dev.json -g ./multidetox_gt_dev.json -o ./eval_files/bloomz_dev.txt
-```
-Since we dont have ground truth for test set, alternatively we compare the chrf score between the source sentences their respective predictions since we hope that there will be larger overlaps between the ground truths and the source/toxic sentences. Thus for test set, you can run
-```
-python evaluate_pred.py --prediction ./dataset/bloomz_pred_test.json  -i ./dataset/source_test.json -g ./dataset/source_test.json -o ./eval_files/bloomz_test.txt
+python evaluate_pred.py --prediction ./dataset/bloomz_pred_dev.json  -l ./dataset/lang_dev.json -i ./dataset/source_dev.json -g ./multidetox_gt_dev.json -o ./eval_files/bloomz_dev.txt
 ```
